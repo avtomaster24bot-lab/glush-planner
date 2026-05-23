@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Глушь.io — Планировщик дня (Gemini Edition)</title>
+<title>Глушь.io — Планировщик дня (Gemini)</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Tektur:wght@400;600;700&family=Noto+Serif:ital,wght@0,400;0,600;1,400&display=swap');
  
@@ -47,7 +47,7 @@
     z-index: 0;
   }
  
-  /* ── API KEY SCREEN ── */
+  /* API KEY SCREEN */
   .api-screen {
     position: fixed;
     inset: 0;
@@ -207,11 +207,11 @@
     vertical-align: middle;
   }
  
-  /* ── MAIN APP (hidden until key entered) ── */
+  /* MAIN APP */
   .app { display: none; width: 100%; flex-direction: column; align-items: center; }
   .app.visible { display: flex; }
  
-  /* ── HEADER ── */
+  /* HEADER */
   header {
     width: 100%;
     max-width: 720px;
@@ -291,7 +291,7 @@
  
   .key-btn:hover { border-color: var(--signal); color: var(--signal); }
  
-  /* ── NOTEBOOK ── */
+  /* NOTEBOOK */
   .notebook-panel {
     width: 100%;
     max-width: 720px;
@@ -416,7 +416,7 @@
  
   .task-count { font-family:'Tektur',monospace; font-size:9px; color:var(--text-dim); }
  
-  /* ── STATIONS ── */
+  /* STATIONS */
   .stations { width:100%; max-width:720px; padding:0 24px; position:relative; z-index:1; margin-bottom:14px; }
   .station-track { display:flex; align-items:center; }
  
@@ -461,7 +461,7 @@
   .station-label.active   { color: var(--accent); }
   .station-label.done-lbl { color: var(--accent); opacity: 0.5; }
  
-  /* ── CHAT ── */
+  /* CHAT */
   .chat-wrap { width:100%; max-width:720px; flex:1; padding:0 24px; position:relative; z-index:1; }
  
   .messages {
@@ -506,7 +506,7 @@
     30%          { transform:translateY(-5px); opacity:1; }
   }
  
-  /* ── INPUT ── */
+  /* INPUT */
   .input-area { width:100%; max-width:720px; padding:10px 24px 24px; position:relative; z-index:1; }
  
   .input-row { display:flex; gap:8px; align-items:flex-end; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:10px 12px; transition:border-color 0.2s; }
@@ -530,35 +530,28 @@
 </head>
 <body>
  
-<!-- ══════════════════════════════════
-     API KEY SCREEN
-══════════════════════════════════ -->
+<!-- API KEY SCREEN -->
 <div class="api-screen" id="apiScreen">
   <div class="api-card">
     <div class="api-logo"><div class="api-dot"></div>Глушь.io</div>
     <div class="api-title">Введи API-ключ Gemini</div>
     <div class="api-desc">
-      Планировщик работает через Gemini AI от Google. Ключ хранится только в твоём браузере и никуда не отправляется.<br><br>
+      Планировщик работает через Gemini AI от Google (бесплатно). Ключ хранится только в твоём браузере.<br><br>
       Получить ключ бесплатно: <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
     </div>
     <div class="api-label">API Key</div>
     <div class="api-input-row">
       <input class="api-input" id="apiKeyInput" type="password" placeholder="AIza..." onkeydown="apiKeydown(event)">
-      <button class="eye-btn" onclick="toggleEye()" title="Показать/скрыть">👁</button>
+      <button class="eye-btn" onclick="toggleEye()">👁</button>
     </div>
-    <div class="api-error" id="apiError">Неверный ключ или ошибка соединения. Проверь ключ.</div>
+    <div class="api-error" id="apiError">Неверный ключ или ошибка соединения.</div>
     <button class="api-submit" id="apiSubmit" onclick="submitKey()">Войти в планировщик →</button>
-    <div class="api-note">
-      <span></span>Ключ сохраняется в localStorage браузера
-    </div>
+    <div class="api-note"><span></span>Ключ сохраняется в localStorage</div>
   </div>
 </div>
  
-<!-- ══════════════════════════════════
-     MAIN APP
-══════════════════════════════════ -->
+<!-- MAIN APP -->
 <div class="app" id="app">
- 
   <header>
     <div>
       <div class="logo"><div class="logo-dot"></div>Глушь.io — Планировщик дня (Gemini)</div>
@@ -570,8 +563,8 @@
         <span id="toggleLabel">Блокнот</span>
         <svg class="arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
       </button>
-      <button class="key-btn" onclick="restoreSession()" title="Восстановить сессию" id="restoreBtn" style="display:none;">↩</button>
-      <button class="key-btn" onclick="changeKey()" title="Сменить ключ">🔑</button>
+      <button class="key-btn" onclick="restoreSession()" id="restoreBtn" style="display:none;">↩</button>
+      <button class="key-btn" onclick="changeKey()">🔑</button>
     </div>
   </header>
  
@@ -614,13 +607,10 @@
       <button class="reset-btn" onclick="resetChat()">↺ СБРОС</button>
     </div>
   </div>
- 
-</div><!-- /app -->
+</div>
  
 <script>
-/* ════════════════════════════════════
-   SYSTEM PROMPT
-════════════════════════════════════ */
+/* SYSTEM PROMPT (адаптирован для Gemini, но почти тот же) */
 const SYSTEM_PROMPT = `
 <role_and_tone>
 Ты — Проводник дня. Твой пользователь строит IT-продукты, ведёт несколько параллельных проектов. Твоя цель: провести его от хаоса в голове к чёткому плану дня. Тон: партнёрский, сухой, без лирики. Как надёжный соратник, а не мотивационный спикер.
@@ -670,39 +660,35 @@ const SYSTEM_PROMPT = `
 Язык: только русский. Будь лаконичен.`;
  
 /* ════════════════════════════════════
-   API KEY
+   API KEY (GEMINI)
 ════════════════════════════════════ */
-let API_KEY = localStorage.getItem('glush_gemini_api_key') || '';
+let API_KEY = localStorage.getItem('glush_gemini_key') || '';
  
 function apiKeydown(e) { if (e.key === 'Enter') submitKey(); }
- 
-function toggleEye() {
-  const inp = document.getElementById('apiKeyInput');
-  inp.type = inp.type === 'password' ? 'text' : 'password';
-}
+function toggleEye() { const inp = document.getElementById('apiKeyInput'); inp.type = inp.type === 'password' ? 'text' : 'password'; }
  
 async function submitKey() {
   const inp = document.getElementById('apiKeyInput');
   const err = document.getElementById('apiError');
   const btn = document.getElementById('apiSubmit');
   const key = inp.value.trim();
-  if (!key.startsWith('AIza')) { err.style.display = 'block'; err.textContent = 'Ключ должен начинаться с AIza...'; return; }
+  if (!key.startsWith('AIza')) { err.style.display = 'block'; err.textContent = 'Ключ должен начинаться с AIza... (получи в Google AI Studio)'; return; }
  
   btn.textContent = 'Проверяем...';
   btn.disabled = true;
   err.style.display = 'none';
  
-  // Quick test call to Gemini API
   try {
+    // Тестовый запрос к Gemini API
     const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`;
     const res = await fetch(testUrl, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ contents: [{ parts: [{ text: 'hi' }] }] })
+      body: JSON.stringify({ contents: [{ parts: [{ text: 'ping' }] }] })
     });
     if (!res.ok) throw new Error('bad key');
     API_KEY = key;
-    localStorage.setItem('glush_gemini_api_key', key);
+    localStorage.setItem('glush_gemini_key', key);
     launchApp();
   } catch {
     err.style.display = 'block';
@@ -713,37 +699,13 @@ async function submitKey() {
 }
  
 function changeKey() {
-  localStorage.removeItem('glush_gemini_api_key');
+  localStorage.removeItem('glush_gemini_key');
   API_KEY = '';
   document.getElementById('app').classList.remove('visible');
   document.getElementById('apiScreen').style.display = 'flex';
   document.getElementById('apiKeyInput').value = '';
   document.getElementById('apiSubmit').textContent = 'Войти в планировщик →';
   document.getElementById('apiSubmit').disabled = false;
-}
- 
-function launchApp() {
-  document.getElementById('apiScreen').style.display = 'none';
-  document.getElementById('app').classList.add('visible');
-  buildStations();
- 
-  // Пробуем загрузить сохранённую сессию
-  const saved = loadSession();
-  if (saved && saved.history && saved.history.length > 0) {
-    history = saved.history;
-    currentStation = saved.currentStation || 0;
-    tasks = saved.tasks || [];
-    taskIdCounter = saved.taskIdCounter || 0;
-    renderTasks();
-    if (currentStation) updateStations(currentStation);
-    history.forEach(m => addMessageRaw(m.role === 'user' ? 'user' : 'bot', m.content));
-    // Показываем кнопку восстановления (бэкап предыдущей)
-    if (localStorage.getItem(BACKUP_KEY)) document.getElementById('restoreBtn').style.display = 'flex';
-    showToast(`Сессия загружена (${saved.savedAt || ''})`);
-  } else {
-    renderTasks();
-    startSession();
-  }
 }
  
 /* ════════════════════════════════════
@@ -753,15 +715,13 @@ let tasks = [], taskIdCounter = 0;
  
 function toggleNotebook() {
   const panel = document.getElementById('notebookPanel');
-  const btn   = document.getElementById('notebookToggle');
+  const btn = document.getElementById('notebookToggle');
   const label = document.getElementById('toggleLabel');
   const isOpen = panel.classList.toggle('open');
   btn.classList.toggle('open', isOpen);
   label.textContent = isOpen ? 'Скрыть' : 'Блокнот';
 }
- 
 function taskKeydown(e) { if (e.key === 'Enter') { e.preventDefault(); addTask(); } }
- 
 function addTask() {
   const input = document.getElementById('taskInput');
   const text = input.value.trim();
@@ -770,19 +730,17 @@ function addTask() {
   input.value = '';
   renderTasks();
 }
- 
 function toggleTask(id) { const t = tasks.find(t=>t.id===id); if(t){t.done=!t.done; renderTasks();} }
 function deleteTask(id) { tasks = tasks.filter(t=>t.id!==id); renderTasks(); }
-function clearDone()    { tasks = tasks.filter(t=>!t.done); renderTasks(); }
-function copyTasks()    { navigator.clipboard.writeText(tasks.map(t=>(t.done?'[✓] ':'[ ] ')+t.text).join('\n')||'Список пуст').catch(()=>{}); }
- 
+function clearDone() { tasks = tasks.filter(t=>!t.done); renderTasks(); }
+function copyTasks() { navigator.clipboard.writeText(tasks.map(t=>(t.done?'[✓] ':'[ ] ')+t.text).join('\n')||'Список пуст').catch(()=>{}); }
 function renderTasks() {
   const list = document.getElementById('taskList');
   const count = document.getElementById('taskCount');
   list.innerHTML = '';
   count.textContent = `${tasks.length} задач`;
   tasks.forEach(t => {
-    const li  = document.createElement('li'); li.className = 'task-item';
+    const li = document.createElement('li'); li.className = 'task-item';
     const chk = document.createElement('div'); chk.className = 'task-check'+(t.done?' checked':''); chk.onclick = ()=>toggleTask(t.id);
     const txt = document.createElement('span'); txt.className = 'task-text'+(t.done?' done':''); txt.textContent = t.text;
     const del = document.createElement('button'); del.className = 'task-del'; del.textContent = '×'; del.onclick = ()=>deleteTask(t.id);
@@ -797,41 +755,21 @@ const STATIONS = [
   {id:1,label:'Состояние'},{id:2,label:'Задачи'},
   {id:3,label:'Приоритет'},{id:4,label:'Блоки'},{id:5,label:'План'}
 ];
- 
 let history = [], currentStation = 0;
  
-/* ════════════════════════════════════
-   AUTOSAVE / RESTORE
-════════════════════════════════════ */
+/* AUTOSAVE */
 const SAVE_KEY = 'glush_session';
 const BACKUP_KEY = 'glush_session_backup';
- 
 function saveSession() {
   const data = { history, currentStation, tasks, taskIdCounter, savedAt: new Date().toLocaleTimeString('ru') };
   localStorage.setItem(SAVE_KEY, JSON.stringify(data));
 }
- 
 function loadSession() {
-  try {
-    const raw = localStorage.getItem(SAVE_KEY);
-    if (!raw) return null;
-    return JSON.parse(raw);
-  } catch { return null; }
+  try { const raw = localStorage.getItem(SAVE_KEY); if (!raw) return null; return JSON.parse(raw); } catch { return null; }
 }
- 
-function backupSession() {
-  const current = localStorage.getItem(SAVE_KEY);
-  if (current) localStorage.setItem(BACKUP_KEY, current);
-}
- 
+function backupSession() { const cur = localStorage.getItem(SAVE_KEY); if (cur) localStorage.setItem(BACKUP_KEY, cur); }
 function restoreBackup() {
-  try {
-    const raw = localStorage.getItem(BACKUP_KEY);
-    if (!raw) return false;
-    const data = JSON.parse(raw);
-    localStorage.setItem(SAVE_KEY, raw);
-    return data;
-  } catch { return false; }
+  try { const raw = localStorage.getItem(BACKUP_KEY); if (!raw) return false; const data = JSON.parse(raw); localStorage.setItem(SAVE_KEY, raw); return data; } catch { return false; }
 }
  
 function buildStations() {
@@ -840,16 +778,15 @@ function buildStations() {
   track.innerHTML = ''; labels.innerHTML = '';
   STATIONS.forEach((s,i) => {
     const node = document.createElement('div'); node.className='station-node'; node.id=`node-${s.id}`; node.textContent=s.id; track.appendChild(node);
-    const lbl  = document.createElement('div'); lbl.className='station-label'; lbl.id=`lbl-${s.id}`; lbl.textContent=s.label; labels.appendChild(lbl);
+    const lbl = document.createElement('div'); lbl.className='station-label'; lbl.id=`lbl-${s.id}`; lbl.textContent=s.label; labels.appendChild(lbl);
     if (i < STATIONS.length-1) { const line=document.createElement('div'); line.className='station-line'; line.id=`line-${s.id}`; track.appendChild(line); }
   });
 }
- 
 function updateStations(station) {
   currentStation = station;
   STATIONS.forEach(s => {
     const node = document.getElementById(`node-${s.id}`);
-    const lbl  = document.getElementById(`lbl-${s.id}`);
+    const lbl = document.getElementById(`lbl-${s.id}`);
     const line = document.getElementById(`line-${s.id}`);
     node.className='station-node'; lbl.className='station-label'; if(line) line.className='station-line';
     if (s.id < station) { node.classList.add('done'); node.textContent='✓'; lbl.classList.add('done-lbl'); if(line) line.classList.add('done'); }
@@ -858,9 +795,7 @@ function updateStations(station) {
   });
 }
  
-/* ════════════════════════════════════
-   CHAT
-════════════════════════════════════ */
+/* CHAT */
 function addMessage(role, text) {
   const msgs = document.getElementById('messages');
   const wrap = document.createElement('div'); wrap.className=`msg ${role}`;
@@ -870,9 +805,18 @@ function addMessage(role, text) {
   bubble.innerHTML = clean.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');
   wrap.appendChild(avatar); wrap.appendChild(bubble); msgs.appendChild(wrap);
   msgs.scrollTop = msgs.scrollHeight;
-  saveSession(); // автосохранение после каждого сообщения
+  saveSession();
 }
- 
+function addMessageRaw(role, text) {
+  const msgs = document.getElementById('messages');
+  const wrap = document.createElement('div'); wrap.className=`msg ${role}`;
+  const avatar = document.createElement('div'); avatar.className=`avatar ${role}`; avatar.textContent=role==='bot'?'AI':'Я';
+  const bubble = document.createElement('div'); bubble.className='bubble';
+  const clean = text.replace(/\[СТАНЦИЯ:\d\]/g,'').trim();
+  bubble.innerHTML = clean.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');
+  wrap.appendChild(avatar); wrap.appendChild(bubble); msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
 function showTyping() {
   const msgs = document.getElementById('messages');
   const wrap = document.createElement('div'); wrap.className='msg bot'; wrap.id='typing-indicator';
@@ -881,48 +825,38 @@ function showTyping() {
   wrap.appendChild(avatar); wrap.appendChild(bubble); msgs.appendChild(wrap);
   msgs.scrollTop = msgs.scrollHeight;
 }
- 
 function removeTyping() { const t=document.getElementById('typing-indicator'); if(t) t.remove(); }
 function extractStation(text) { const m=text.match(/\[СТАНЦИЯ:(\d)\]/); return m?parseInt(m[1]):null; }
  
-/* ════════════════════════════════════
-   API CALL (GEMINI)
-════════════════════════════════════ */
+/* GEMINI API CALL (полноценный) */
 async function callGemini(messages) {
-  // Convert history to Gemini format
+  // Преобразуем историю в формат Gemini
   const contents = [];
   for (const msg of messages) {
-    let role = msg.role;
-    if (role === 'assistant') role = 'model';
-    if (role === 'user') role = 'user';
+    let role = msg.role === 'assistant' ? 'model' : 'user';
     contents.push({ role: role, parts: [{ text: msg.content }] });
   }
-  
   const requestBody = {
     system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
     contents: contents,
-    generationConfig: {
-      temperature: 0.7,
-      maxOutputTokens: 1000,
-    }
+    generationConfig: { temperature: 0.7, maxOutputTokens: 1000 }
   };
-  
   const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${API_KEY}`;
   const response = await fetch(url, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(requestBody)
   });
-  
   const data = await response.json();
   if (data.error) throw new Error(data.error.message);
   return data.candidates[0].content.parts[0].text;
 }
  
+/* ОТПРАВКА СООБЩЕНИЯ */
 async function sendMessage() {
   const input = document.getElementById('userInput');
-  const btn   = document.getElementById('sendBtn');
-  const text  = input.value.trim();
+  const btn = document.getElementById('sendBtn');
+  const text = input.value.trim();
   if (!text) return;
   addMessage('user', text);
   history.push({ role:'user', content:text });
@@ -933,40 +867,36 @@ async function sendMessage() {
     removeTyping(); addMessage('bot', reply);
     history.push({ role:'assistant', content:reply });
     const s = extractStation(reply); if(s) updateStations(s);
-  } catch (error) {
-    removeTyping(); 
-    addMessage('bot', `Ошибка: ${error.message}. Проверьте ключ и подключение к интернету.`);
-  }
+  } catch { removeTyping(); addMessage('bot','Ошибка соединения. Попробуй ещё раз.'); }
   btn.disabled = false; input.focus();
 }
  
+/* СБРОС */
 async function resetChat() {
-  // Двойная защита: кастомный диалог вместо confirm
   const ok = await showResetDialog();
   if (!ok) return;
-  backupSession(); // сохраняем бэкап перед сбросом
+  backupSession();
   history = []; currentStation = 0;
   document.getElementById('messages').innerHTML='';
-  document.getElementById('restoreBtn').style.display = 'flex'; // показать кнопку восстановления
+  document.getElementById('restoreBtn').style.display = 'flex';
   buildStations(); await startSession();
 }
- 
 function showResetDialog() {
   return new Promise(resolve => {
     const overlay = document.createElement('div');
-    overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;display:flex;align-items:center;justify-content:center;padding:24px;`;
+    overlay.style.cssText = 'position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;display:flex;align-items:center;justify-content:center;padding:24px;';
     overlay.innerHTML = `
       <div style="background:#111318;border:1px solid #1e2229;border-top:3px solid #ff4d6d;border-radius:8px;padding:28px;max-width:360px;width:100%;font-family:'Tektur',monospace;">
         <div style="font-size:13px;color:#ff4d6d;letter-spacing:.1em;margin-bottom:12px;">⚠ СБРОС СЕССИИ</div>
         <div style="font-size:13px;color:#d4dbe8;line-height:1.6;margin-bottom:8px;font-family:'Noto Serif',serif;">Весь диалог будет удалён. Бэкап сохранится — можно будет восстановить кнопкой ↩ в шапке.</div>
         <div style="font-size:11px;color:#5a6478;margin-bottom:20px;font-family:'Noto Serif',serif;">Задачи в блокноте останутся.</div>
         <div style="display:flex;gap:10px;">
-          <button id="cancelReset" style="flex:1;background:transparent;border:1px solid #1e2229;border-radius:5px;padding:10px;color:#5a6478;font-family:'Tektur',monospace;font-size:11px;cursor:pointer;letter-spacing:.08em;">ОТМЕНА</button>
-          <button id="confirmReset" style="flex:1;background:#ff4d6d;border:none;border-radius:5px;padding:10px;color:#0a0c0f;font-family:'Tektur',monospace;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.08em;">ДА, СБРОСИТЬ</button>
+          <button id="cancelReset" style="flex:1;background:transparent;border:1px solid #1e2229;border-radius:5px;padding:10px;color:#5a6478;font-family:'Tektur',monospace;font-size:11px;cursor:pointer;">ОТМЕНА</button>
+          <button id="confirmReset" style="flex:1;background:#ff4d6d;border:none;border-radius:5px;padding:10px;color:#0a0c0f;font-family:'Tektur',monospace;font-size:11px;font-weight:700;cursor:pointer;">ДА, СБРОСИТЬ</button>
         </div>
       </div>`;
     document.body.appendChild(overlay);
-    document.getElementById('cancelReset').onclick  = () => { overlay.remove(); resolve(false); };
+    document.getElementById('cancelReset').onclick = () => { overlay.remove(); resolve(false); };
     document.getElementById('confirmReset').onclick = () => { overlay.remove(); resolve(true); };
   });
 }
@@ -982,30 +912,18 @@ async function restoreSession() {
   buildStations();
   renderTasks();
   if (currentStation) updateStations(currentStation);
-  // Перерисовываем сообщения из истории
   history.forEach(m => addMessageRaw(m.role === 'user' ? 'user' : 'bot', m.content));
   showToast(`Сессия восстановлена (${data.savedAt || ''})`);
 }
- 
-function addMessageRaw(role, text) {
-  const msgs = document.getElementById('messages');
-  const wrap = document.createElement('div'); wrap.className=`msg ${role}`;
-  const avatar = document.createElement('div'); avatar.className=`avatar ${role}`; avatar.textContent=role==='bot'?'AI':'Я';
-  const bubble = document.createElement('div'); bubble.className='bubble';
-  const clean = text.replace(/\[СТАНЦИЯ:\d\]/g,'').trim();
-  bubble.innerHTML = clean.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');
-  wrap.appendChild(avatar); wrap.appendChild(bubble); msgs.appendChild(wrap);
-  msgs.scrollTop = msgs.scrollHeight;
-}
- 
 function showToast(msg) {
   const t = document.createElement('div');
-  t.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#00e5a0;color:#0a0c0f;font-family:'Tektur',monospace;font-size:11px;letter-spacing:.1em;padding:10px 20px;border-radius:6px;z-index:999;transition:opacity 0.5s;`;
+  t.style.cssText = 'position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#00e5a0;color:#0a0c0f;font-family:"Tektur",monospace;font-size:11px;letter-spacing:.1em;padding:10px 20px;border-radius:6px;z-index:999;transition:opacity 0.5s;';
   t.textContent = msg;
   document.body.appendChild(t);
   setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(), 500); }, 2500);
 }
  
+/* СТАРТ СЕССИИ */
 async function startSession() {
   const btn = document.getElementById('sendBtn'); btn.disabled=true; showTyping();
   try {
@@ -1013,13 +931,32 @@ async function startSession() {
     removeTyping(); addMessage('bot', reply);
     history.push({role:'assistant', content:reply});
     const s = extractStation(reply); if(s) updateStations(s);
-  } catch (error) {
-    removeTyping(); 
-    addMessage('bot', `Не удалось подключиться: ${error.message}. Обнови страницу и проверь ключ.`);
-  }
+  } catch { removeTyping(); addMessage('bot','Не удалось подключиться. Обнови страницу.'); }
   btn.disabled = false;
 }
  
+function launchApp() {
+  document.getElementById('apiScreen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  buildStations();
+  const saved = loadSession();
+  if (saved && saved.history && saved.history.length > 0) {
+    history = saved.history;
+    currentStation = saved.currentStation || 0;
+    tasks = saved.tasks || [];
+    taskIdCounter = saved.taskIdCounter || 0;
+    renderTasks();
+    if (currentStation) updateStations(currentStation);
+    history.forEach(m => addMessageRaw(m.role === 'user' ? 'user' : 'bot', m.content));
+    if (localStorage.getItem(BACKUP_KEY)) document.getElementById('restoreBtn').style.display = 'flex';
+    showToast(`Сессия загружена (${saved.savedAt || ''})`);
+  } else {
+    renderTasks();
+    startSession();
+  }
+}
+ 
+/* ИНИЦИАЛИЗАЦИЯ */
 document.getElementById('userInput').addEventListener('input', function() {
   this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,120)+'px';
 });
@@ -1027,14 +964,335 @@ document.getElementById('userInput').addEventListener('keydown', function(e) {
   if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
 });
  
-/* ════════════════════════════════════
-   INIT
-════════════════════════════════════ */
 if (API_KEY) {
   launchApp();
-} else {
-  // show key screen
 }
+</script>
+</body>
+</html>
+    // ------------------- отрисовка станций -------------------
+    function renderStations() {
+        stationsContainer.innerHTML = "";
+        for (let i = 0; i < STATIONS.length; i++) {
+            const station = STATIONS[i];
+            const div = document.createElement('div');
+            div.className = 'station';
+            div.textContent = station.name;
+            if (currentStation === station.id) {
+                div.classList.add('active');
+            } else if (currentStation > station.id) {
+                div.classList.add('done');
+            }
+            stationsContainer.appendChild(div);
+        }
+    }
+
+    // ------------------- добавить сообщение в чат -------------------
+    function addMessage(role, text) {
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${role}`;
+        const bubble = document.createElement('div');
+        bubble.className = 'bubble';
+        // простой парсинг жирного текста и переводов строк
+        let formatted = text.replace(/\*\*(.*?)\*\*/g, '<strong>$1</strong>')
+                           .replace(/\n/g, '<br>');
+        bubble.innerHTML = formatted;
+        messageDiv.appendChild(bubble);
+        chatContainer.appendChild(messageDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function showTyping() {
+        const typingDiv = document.createElement('div');
+        typingDiv.className = 'message bot';
+        typingDiv.id = 'typingIndicator';
+        typingDiv.innerHTML = `<div class="bubble"><div class="typing"><span></span><span></span><span></span></div></div>`;
+        chatContainer.appendChild(typingDiv);
+        chatContainer.scrollTop = chatContainer.scrollHeight;
+    }
+
+    function removeTyping() {
+        const el = document.getElementById('typingIndicator');
+        if (el) el.remove();
+    }
+
+    // ------------------- вызов Gemini API -------------------
+    async function callGemini(messagesArray) {
+        // Преобразуем историю в формат Gemini
+        const contents = [];
+        for (const msg of messagesArray) {
+            let role = msg.role === 'assistant' ? 'model' : 'user';
+            contents.push({
+                role: role,
+                parts: [{ text: msg.content }]
+            });
+        }
+
+        const systemPrompt = `Ты — Проводник дня. Твоя задача — провести пользователя по пяти станциям планирования:
+
+1. Состояние (спроси энергию от 1 до 10, узнай самочувствие)
+2. Задачи (пусть выгрузит все дела без фильтра)
+3. Приоритет (выдели 1-3 главные задачи)
+4. Блоки (выясни, что мешает, и предложи микро-шаг)
+5. План (выдай чёткий план: топ-3, первый шаг, резерв)
+
+Правила:
+- Отвечай кратко (2-4 предложения + вопрос в конце).
+- В конце каждого своего сообщения обязательно добавляй [СТАНЦИЯ:N], где N — текущая станция (1-5).
+- Будь лаконичным, деловым, без лишней эмпатии.
+- Если пользователь говорит "не знаю" или "каша", помоги сузить: спроси, что давит сильнее всего.`;
+
+        const requestBody = {
+            system_instruction: {
+                parts: [{ text: systemPrompt }]
+            },
+            contents: contents,
+            generationConfig: {
+                temperature: 0.7,
+                maxOutputTokens: 800,
+                topP: 0.95
+            }
+        };
+
+        const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${API_KEY}`;
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(requestBody)
+        });
+
+        if (!response.ok) {
+            const errorData = await response.json();
+            throw new Error(errorData.error?.message || `HTTP ${response.status}`);
+        }
+
+        const data = await response.json();
+        if (data.error) throw new Error(data.error.message);
+        const replyText = data.candidates[0].content.parts[0].text;
+        return replyText;
+    }
+
+    // ------------------- отправить сообщение -------------------
+    async function sendMessage() {
+        if (isWaiting) return;
+        const text = userInput.value.trim();
+        if (!text) return;
+
+        // Добавляем сообщение пользователя в UI и историю
+        addMessage('user', text);
+        conversationHistory.push({ role: 'user', content: text });
+        userInput.value = '';
+        userInput.style.height = 'auto';
+        
+        isWaiting = true;
+        sendBtn.disabled = true;
+        showTyping();
+
+        try {
+            const reply = await callGemini(conversationHistory);
+            removeTyping();
+            addMessage('bot', reply);
+            conversationHistory.push({ role: 'assistant', content: reply });
+
+            // Определяем номер станции из ответа
+            const stationMatch = reply.match(/\[СТАНЦИЯ:(\d)\]/);
+            if (stationMatch) {
+                let newStation = parseInt(stationMatch[1]);
+                if (newStation >= 1 && newStation <= 5) {
+                    currentStation = newStation;
+                    renderStations();
+                }
+            }
+        } catch (err) {
+            removeTyping();
+            let errorMsg = err.message;
+            if (errorMsg.includes("API key not valid")) errorMsg = "Неверный API-ключ Gemini. Проверь и перезапусти.";
+            else if (errorMsg.includes("quota")) errorMsg = "Лимит запросов на сегодня исчерпан. Попробуй завтра.";
+            else errorMsg = "Ошибка сети или сервера: " + errorMsg;
+            addMessage('bot', `⚠️ ${errorMsg}`);
+        } finally {
+            isWaiting = false;
+            sendBtn.disabled = false;
+            userInput.focus();
+        }
+    }
+
+    // ------------------- начало новой сессии (приветствие) -------------------
+    async function startSession() {
+        conversationHistory = [];
+        chatContainer.innerHTML = '';
+        currentStation = 0;
+        renderStations();
+
+        addMessage('bot', 'Запускаю планировщик...');
+        showTyping();
+        try {
+            // Первый запрос: попросить начать с 1 станции
+            const initMsg = { role: 'user', content: 'Начни сессию планирования дня. Ты Проводник. Поздоровайся и спроси энергию от 1 до 10, поставь [СТАНЦИЯ:1].' };
+            const reply = await callGemini([initMsg]);
+            removeTyping();
+            addMessage('bot', reply);
+            conversationHistory.push({ role: 'assistant', content: reply });
+            const stationMatch = reply.match(/\[СТАНЦИЯ:(\d)\]/);
+            if (stationMatch) {
+                currentStation = parseInt(stationMatch[1]);
+                renderStations();
+            } else {
+                // запасной вариант
+                currentStation = 1;
+                renderStations();
+            }
+        } catch (err) {
+            removeTyping();
+            addMessage('bot', `❌ Не удалось запустить сессию: ${err.message}. Проверь интернет и API-ключ.`);
+        }
+    }
+
+    // ------------------- сброс диалога (новая сессия) -------------------
+    async function resetConversation() {
+        if (isWaiting) return;
+        conversationHistory = [];
+        chatContainer.innerHTML = '';
+        currentStation = 0;
+        renderStations();
+        await startSession();
+    }
+
+    // ------------------- инициализация: проверка ключа -------------------
+    async function initWithKey(key) {
+        // Простой тестовый запрос к Gemini
+        const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`;
+        try {
+            const res = await fetch(testUrl, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    contents: [{ parts: [{ text: "ping" }] }]
+                })
+            });
+            if (!res.ok) {
+                const errData = await res.json();
+                throw new Error(errData.error?.message || "Invalid key");
+            }
+            API_KEY = key;
+            localStorage.setItem('gemini_api_key', key);
+            keyScreen.style.display = 'none';
+            appDiv.style.display = 'block';
+            startSession();
+        } catch (e) {
+            keyErrorDiv.innerText = `Ошибка: ${e.message}. Проверь ключ.`;
+        }
+    }
+
+    // обработчик кнопки запуска
+    startBtn.onclick = () => {
+        const key = apiKeyInput.value.trim();
+        if (!key.startsWith('AIza')) {
+            keyErrorDiv.innerText = 'Ключ должен начинаться с AIza... (получи бесплатно в Google AI Studio)';
+            return;
+        }
+        keyErrorDiv.innerText = '';
+        initWithKey(key);
+    };
+
+    // поддержка Enter в текстовом поле
+    userInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+    userInput.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 100) + 'px';
+    });
+
+    sendBtn.onclick = sendMessage;
+    globalReset.onclick = resetConversation;
+
+    // Проверка сохранённого ключа при загрузке
+    const savedKey = localStorage.getItem('gemini_api_key');
+    if (savedKey && savedKey.startsWith('AIza')) {
+        apiKeyInput.value = savedKey;
+        initWithKey(savedKey);
+    }
+</script>
+</body>
+</html>        if (data.error) throw new Error(data.error.message);
+        return data.candidates[0].content.parts[0].text;
+    }
+
+    async function init() {
+        const key = document.getElementById('apiKey').value.trim();
+        if (!key.startsWith('AIza')) {
+            document.getElementById('error').innerText = 'Ключ должен начинаться с AIza...';
+            return;
+        }
+        API_KEY = key;
+        try {
+            // тест
+            const test = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${API_KEY}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ contents: [{ parts: [{ text: "ping" }] }] })
+            });
+            if (!test.ok) throw new Error();
+            document.getElementById('keyScreen').style.display = 'none';
+            document.getElementById('app').style.display = 'block';
+            startSession();
+        } catch(e) {
+            document.getElementById('error').innerText = 'Неверный ключ или нет интернета';
+        }
+    }
+
+    function addMessage(role, text) {
+        const chatDiv = document.getElementById('chat');
+        const div = document.createElement('div');
+        div.className = role;
+        div.innerHTML = `<strong>${role === 'user' ? 'Вы' : 'Проводник'}:</strong><br>${text.replace(/\n/g, '<br>')}`;
+        chatDiv.appendChild(div);
+        chatDiv.scrollTop = chatDiv.scrollHeight;
+    }
+
+    async function send() {
+        const input = document.getElementById('userInput');
+        const text = input.value.trim();
+        if (!text) return;
+        addMessage('user', text);
+        history.push({ role: 'user', content: text });
+        input.value = '';
+        const btn = document.querySelector('#app button:first-of-type');
+        btn.disabled = true;
+        try {
+            const reply = await callGemini(history);
+            addMessage('bot', reply);
+            history.push({ role: 'assistant', content: reply });
+            const match = reply.match(/\[СТАНЦИЯ:(\d)\]/);
+            if (match) {
+                currentStation = parseInt(match[1]);
+                renderStations();
+            }
+        } catch(e) {
+            addMessage('bot', `Ошибка: ${e.message}`);
+        }
+        btn.disabled = false;
+    }
+
+    async function startSession() {
+        const welcome = 'Привет. Оцени свою энергию от 1 до 10. [СТАНЦИЯ:1]';
+        addMessage('bot', welcome);
+        history = [{ role: 'assistant', content: welcome }];
+        currentStation = 1;
+        renderStations();
+    }
+
+    async function resetChat() {
+        history = [];
+        document.getElementById('chat').innerHTML = '';
+        await startSession();
+    }
+
+    window.init = init; window.send = send; window.resetChat = resetChat;
 </script>
 </body>
 </html>
