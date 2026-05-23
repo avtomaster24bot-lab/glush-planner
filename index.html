@@ -1,12 +1,9 @@
-
-raw
-Index · HTML
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Глушь.io — Планировщик дня</title>
+<title>Глушь.io — Планировщик дня (Gemini Edition)</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Tektur:wght@400;600;700&family=Noto+Serif:ital,wght@0,400;0,600;1,400&display=swap');
  
@@ -539,14 +536,14 @@ Index · HTML
 <div class="api-screen" id="apiScreen">
   <div class="api-card">
     <div class="api-logo"><div class="api-dot"></div>Глушь.io</div>
-    <div class="api-title">Введи API-ключ Anthropic</div>
+    <div class="api-title">Введи API-ключ Gemini</div>
     <div class="api-desc">
-      Планировщик работает через Claude AI. Ключ хранится только в твоём браузере и никуда не отправляется.<br><br>
-      Получить ключ бесплатно: <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>
+      Планировщик работает через Gemini AI от Google. Ключ хранится только в твоём браузере и никуда не отправляется.<br><br>
+      Получить ключ бесплатно: <a href="https://aistudio.google.com/app/apikey" target="_blank">Google AI Studio</a>
     </div>
     <div class="api-label">API Key</div>
     <div class="api-input-row">
-      <input class="api-input" id="apiKeyInput" type="password" placeholder="sk-ant-api03-..." onkeydown="apiKeydown(event)">
+      <input class="api-input" id="apiKeyInput" type="password" placeholder="AIza..." onkeydown="apiKeydown(event)">
       <button class="eye-btn" onclick="toggleEye()" title="Показать/скрыть">👁</button>
     </div>
     <div class="api-error" id="apiError">Неверный ключ или ошибка соединения. Проверь ключ.</div>
@@ -564,7 +561,7 @@ Index · HTML
  
   <header>
     <div>
-      <div class="logo"><div class="logo-dot"></div>Глушь.io — Планировщик дня</div>
+      <div class="logo"><div class="logo-dot"></div>Глушь.io — Планировщик дня (Gemini)</div>
       <div class="subtitle">Бот-проводник · Cognitive Guide Architect</div>
     </div>
     <div class="header-right">
@@ -675,7 +672,7 @@ const SYSTEM_PROMPT = `
 /* ════════════════════════════════════
    API KEY
 ════════════════════════════════════ */
-let API_KEY = localStorage.getItem('glush_api_key') || '';
+let API_KEY = localStorage.getItem('glush_gemini_api_key') || '';
  
 function apiKeydown(e) { if (e.key === 'Enter') submitKey(); }
  
@@ -689,22 +686,23 @@ async function submitKey() {
   const err = document.getElementById('apiError');
   const btn = document.getElementById('apiSubmit');
   const key = inp.value.trim();
-  if (!key.startsWith('sk-ant')) { err.style.display = 'block'; err.textContent = 'Ключ должен начинаться с sk-ant...'; return; }
+  if (!key.startsWith('AIza')) { err.style.display = 'block'; err.textContent = 'Ключ должен начинаться с AIza...'; return; }
  
   btn.textContent = 'Проверяем...';
   btn.disabled = true;
   err.style.display = 'none';
  
-  // Quick test call
+  // Quick test call to Gemini API
   try {
-    const res = await fetch('https://api.anthropic.com/v1/messages', {
+    const testUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${key}`;
+    const res = await fetch(testUrl, {
       method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
-      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:10, messages:[{role:'user',content:'hi'}] })
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ contents: [{ parts: [{ text: 'hi' }] }] })
     });
     if (!res.ok) throw new Error('bad key');
     API_KEY = key;
-    localStorage.setItem('glush_api_key', key);
+    localStorage.setItem('glush_gemini_api_key', key);
     launchApp();
   } catch {
     err.style.display = 'block';
@@ -715,7 +713,7 @@ async function submitKey() {
 }
  
 function changeKey() {
-  localStorage.removeItem('glush_api_key');
+  localStorage.removeItem('glush_gemini_api_key');
   API_KEY = '';
   document.getElementById('app').classList.remove('visible');
   document.getElementById('apiScreen').style.display = 'flex';
@@ -888,17 +886,37 @@ function removeTyping() { const t=document.getElementById('typing-indicator'); i
 function extractStation(text) { const m=text.match(/\[СТАНЦИЯ:(\d)\]/); return m?parseInt(m[1]):null; }
  
 /* ════════════════════════════════════
-   API CALL
+   API CALL (GEMINI)
 ════════════════════════════════════ */
-async function callAPI(messages) {
-  const res = await fetch('https://api.anthropic.com/v1/messages', {
+async function callGemini(messages) {
+  // Convert history to Gemini format
+  const contents = [];
+  for (const msg of messages) {
+    let role = msg.role;
+    if (role === 'assistant') role = 'model';
+    if (role === 'user') role = 'user';
+    contents.push({ role: role, parts: [{ text: msg.content }] });
+  }
+  
+  const requestBody = {
+    system_instruction: { parts: [{ text: SYSTEM_PROMPT }] },
+    contents: contents,
+    generationConfig: {
+      temperature: 0.7,
+      maxOutputTokens: 1000,
+    }
+  };
+  
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash-lite:generateContent?key=${API_KEY}`;
+  const response = await fetch(url, {
     method: 'POST',
-    headers: { 'Content-Type':'application/json', 'x-api-key': API_KEY, 'anthropic-version':'2023-06-01' },
-    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:SYSTEM_PROMPT, messages })
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(requestBody)
   });
-  const data = await res.json();
+  
+  const data = await response.json();
   if (data.error) throw new Error(data.error.message);
-  return data.content?.[0]?.text || 'Ошибка ответа.';
+  return data.candidates[0].content.parts[0].text;
 }
  
 async function sendMessage() {
@@ -911,11 +929,14 @@ async function sendMessage() {
   input.value = ''; input.style.height='auto';
   btn.disabled = true; showTyping();
   try {
-    const reply = await callAPI(history);
+    const reply = await callGemini(history);
     removeTyping(); addMessage('bot', reply);
     history.push({ role:'assistant', content:reply });
     const s = extractStation(reply); if(s) updateStations(s);
-  } catch { removeTyping(); addMessage('bot','Ошибка соединения. Попробуй ещё раз.'); }
+  } catch (error) {
+    removeTyping(); 
+    addMessage('bot', `Ошибка: ${error.message}. Проверьте ключ и подключение к интернету.`);
+  }
   btn.disabled = false; input.focus();
 }
  
@@ -988,11 +1009,14 @@ function showToast(msg) {
 async function startSession() {
   const btn = document.getElementById('sendBtn'); btn.disabled=true; showTyping();
   try {
-    const reply = await callAPI([{role:'user',content:'Начни сессию планирования дня.'}]);
+    const reply = await callGemini([{role:'user', content:'Начни сессию планирования дня.'}]);
     removeTyping(); addMessage('bot', reply);
-    history.push({role:'assistant',content:reply});
+    history.push({role:'assistant', content:reply});
     const s = extractStation(reply); if(s) updateStations(s);
-  } catch { removeTyping(); addMessage('bot','Не удалось подключиться. Обнови страницу.'); }
+  } catch (error) {
+    removeTyping(); 
+    addMessage('bot', `Не удалось подключиться: ${error.message}. Обнови страницу и проверь ключ.`);
+  }
   btn.disabled = false;
 }
  
