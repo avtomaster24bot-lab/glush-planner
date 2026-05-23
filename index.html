@@ -1,0 +1,1016 @@
+
+raw
+Index · HTML
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Глушь.io — Планировщик дня</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Tektur:wght@400;600;700&family=Noto+Serif:ital,wght@0,400;0,600;1,400&display=swap');
+ 
+  :root {
+    --bg: #0a0c0f;
+    --surface: #111318;
+    --border: #1e2229;
+    --accent: #00e5a0;
+    --accent-dim: rgba(0,229,160,0.12);
+    --accent-glow: rgba(0,229,160,0.25);
+    --text: #d4dbe8;
+    --text-dim: #5a6478;
+    --user-bg: #151a22;
+    --bot-bg: #0f1a15;
+    --signal: #ff4d6d;
+    --note-bg: #0d1117;
+  }
+ 
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+ 
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Noto Serif', serif;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    overflow-x: hidden;
+  }
+ 
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,229,160,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,229,160,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+ 
+  /* ── API KEY SCREEN ── */
+  .api-screen {
+    position: fixed;
+    inset: 0;
+    background: var(--bg);
+    z-index: 100;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+ 
+  .api-card {
+    width: 100%;
+    max-width: 440px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent);
+    border-radius: 8px;
+    padding: 32px;
+  }
+ 
+  .api-logo {
+    font-family: 'Tektur', monospace;
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 0.2em;
+    color: var(--accent);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 24px;
+  }
+ 
+  .api-dot {
+    width: 7px; height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+ 
+  @keyframes pulse {
+    0%,100% { opacity:1; transform:scale(1); }
+    50%      { opacity:.6; transform:scale(1.4); }
+  }
+ 
+  .api-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 8px;
+  }
+ 
+  .api-desc {
+    font-size: 13px;
+    color: var(--text-dim);
+    line-height: 1.6;
+    margin-bottom: 24px;
+  }
+ 
+  .api-desc a {
+    color: var(--accent);
+    text-decoration: none;
+  }
+ 
+  .api-desc a:hover { text-decoration: underline; }
+ 
+  .api-label {
+    font-family: 'Tektur', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+ 
+  .api-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+ 
+  .api-input {
+    flex: 1;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    padding: 10px 14px;
+    color: var(--text);
+    font-family: 'Tektur', monospace;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+    letter-spacing: 0.05em;
+  }
+ 
+  .api-input:focus { border-color: rgba(0,229,160,0.5); }
+  .api-input::placeholder { color: var(--text-dim); letter-spacing: 0; font-family: 'Noto Serif', serif; }
+ 
+  .eye-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 5px;
+    width: 40px;
+    cursor: pointer;
+    color: var(--text-dim);
+    font-size: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+ 
+  .eye-btn:hover { border-color: var(--accent); color: var(--accent); }
+ 
+  .api-submit {
+    width: 100%;
+    background: var(--accent);
+    border: none;
+    border-radius: 5px;
+    padding: 12px;
+    font-family: 'Tektur', monospace;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.15em;
+    color: var(--bg);
+    cursor: pointer;
+    transition: all 0.2s;
+    text-transform: uppercase;
+  }
+ 
+  .api-submit:hover { background: #00ffb3; box-shadow: 0 0 20px var(--accent-glow); }
+ 
+  .api-error {
+    font-size: 12px;
+    color: var(--signal);
+    margin-bottom: 12px;
+    font-family: 'Tektur', monospace;
+    display: none;
+  }
+ 
+  .api-note {
+    margin-top: 16px;
+    font-size: 11px;
+    color: var(--text-dim);
+    text-align: center;
+    line-height: 1.5;
+  }
+ 
+  .api-note span {
+    display: inline-block;
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    margin-right: 5px;
+    vertical-align: middle;
+  }
+ 
+  /* ── MAIN APP (hidden until key entered) ── */
+  .app { display: none; width: 100%; flex-direction: column; align-items: center; }
+  .app.visible { display: flex; }
+ 
+  /* ── HEADER ── */
+  header {
+    width: 100%;
+    max-width: 720px;
+    padding: 28px 24px 12px;
+    position: relative;
+    z-index: 1;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+  }
+ 
+  .logo {
+    font-family: 'Tektur', monospace;
+    font-size: 13px;
+    font-weight: 600;
+    letter-spacing: 0.15em;
+    color: var(--accent);
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+ 
+  .logo-dot {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: pulse 2s ease-in-out infinite;
+  }
+ 
+  .subtitle {
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 0.08em;
+    margin-top: 4px;
+    font-family: 'Tektur', monospace;
+  }
+ 
+  .header-right { display: flex; gap: 8px; align-items: flex-start; margin-top: 4px; }
+ 
+  .notebook-toggle {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 12px;
+    cursor: pointer;
+    font-family: 'Tektur', monospace;
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    transition: all 0.2s;
+  }
+ 
+  .notebook-toggle:hover { border-color: var(--accent); color: var(--accent); box-shadow: 0 0 10px var(--accent-dim); }
+  .notebook-toggle.open  { border-color: var(--accent); color: var(--accent); background: var(--accent-dim); }
+  .notebook-toggle svg   { width:14px; height:14px; fill:currentColor; transition: transform 0.3s ease; }
+  .notebook-toggle.open svg.arrow { transform: rotate(180deg); }
+ 
+  .key-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 7px 10px;
+    cursor: pointer;
+    font-family: 'Tektur', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    transition: all 0.2s;
+  }
+ 
+  .key-btn:hover { border-color: var(--signal); color: var(--signal); }
+ 
+  /* ── NOTEBOOK ── */
+  .notebook-panel {
+    width: 100%;
+    max-width: 720px;
+    padding: 0 24px;
+    position: relative;
+    z-index: 2;
+    overflow: hidden;
+    max-height: 0;
+    transition: max-height 0.4s cubic-bezier(0.4,0,0.2,1), opacity 0.3s ease;
+    opacity: 0;
+  }
+ 
+  .notebook-panel.open { max-height: 340px; opacity: 1; }
+ 
+  .notebook-inner {
+    background: var(--note-bg);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 14px;
+    margin-bottom: 12px;
+  }
+ 
+  .notebook-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:10px; }
+  .notebook-title  { font-family:'Tektur',monospace; font-size:10px; letter-spacing:.12em; color:var(--accent); text-transform:uppercase; }
+  .notebook-actions { display:flex; gap:6px; align-items:center; }
+ 
+  .nb-btn {
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    padding: 3px 8px;
+    font-family: 'Tektur', monospace;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    color: var(--text-dim);
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+ 
+  .nb-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .nb-btn.danger:hover { border-color: var(--signal); color: var(--signal); }
+ 
+  .task-input-row { display:flex; gap:6px; margin-bottom:10px; }
+ 
+  .task-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 7px 10px;
+    color: var(--text);
+    font-family: 'Noto Serif', serif;
+    font-size: 13px;
+    outline: none;
+    transition: border-color 0.2s;
+  }
+ 
+  .task-input:focus { border-color: rgba(0,229,160,0.4); }
+  .task-input::placeholder { color: var(--text-dim); }
+ 
+  .task-add-btn {
+    background: var(--accent);
+    border: none;
+    border-radius: 4px;
+    width: 32px; height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--bg);
+    font-weight: 700;
+    transition: all 0.2s;
+  }
+ 
+  .task-add-btn:hover { background: #00ffb3; }
+ 
+  .task-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    max-height: 160px;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+ 
+  .task-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    animation: fadeSlide 0.25s ease forwards;
+    opacity: 0;
+  }
+ 
+  .task-check {
+    width: 14px; height: 14px;
+    border: 1.5px solid var(--text-dim);
+    border-radius: 3px;
+    cursor: pointer;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+ 
+  .task-check.checked { background: var(--accent); border-color: var(--accent); }
+  .task-check.checked::after { content:'✓'; font-size:9px; color:var(--bg); font-weight:700; }
+ 
+  .task-text { flex:1; font-size:13px; color:var(--text); transition:all 0.2s; }
+  .task-text.done { text-decoration:line-through; color:var(--text-dim); }
+ 
+  .task-del { color:var(--text-dim); cursor:pointer; font-size:14px; background:none; border:none; padding:0 2px; transition:color 0.2s; }
+  .task-del:hover { color: var(--signal); }
+ 
+  .task-count { font-family:'Tektur',monospace; font-size:9px; color:var(--text-dim); }
+ 
+  /* ── STATIONS ── */
+  .stations { width:100%; max-width:720px; padding:0 24px; position:relative; z-index:1; margin-bottom:14px; }
+  .station-track { display:flex; align-items:center; }
+ 
+  .station-node {
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Tektur', monospace;
+    font-size: 10px;
+    color: var(--text-dim);
+    flex-shrink: 0;
+    transition: all 0.4s ease;
+    position: relative;
+    z-index: 2;
+    background: var(--bg);
+  }
+ 
+  .station-node.active { border-color:var(--accent); color:var(--accent); box-shadow:0 0 0 4px var(--accent-dim),0 0 16px var(--accent-glow); }
+ 
+  .station-node.done {
+    border-color: var(--accent);
+    background: var(--accent);
+    color: var(--bg);
+    animation: stationDone 0.5s ease forwards;
+  }
+ 
+  @keyframes stationDone {
+    0%   { transform:scale(1);    box-shadow:0 0 0 0 var(--accent-glow); }
+    40%  { transform:scale(1.25); box-shadow:0 0 0 10px rgba(0,229,160,0); }
+    100% { transform:scale(1);    box-shadow:none; }
+  }
+ 
+  .station-line { flex:1; height:1px; background:var(--border); transition:background 0.5s ease; }
+  .station-line.done { background: var(--accent); }
+ 
+  .station-labels { display:flex; justify-content:space-between; margin-top:7px; }
+ 
+  .station-label { font-family:'Tektur',monospace; font-size:9px; color:var(--text-dim); text-align:center; flex:1; letter-spacing:.05em; transition:color 0.3s; }
+  .station-label.active   { color: var(--accent); }
+  .station-label.done-lbl { color: var(--accent); opacity: 0.5; }
+ 
+  /* ── CHAT ── */
+  .chat-wrap { width:100%; max-width:720px; flex:1; padding:0 24px; position:relative; z-index:1; }
+ 
+  .messages {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    min-height: 260px;
+    max-height: 52vh;
+    overflow-y: auto;
+    padding: 4px 0 16px;
+    scrollbar-width: thin;
+    scrollbar-color: var(--border) transparent;
+  }
+ 
+  .msg { display:flex; gap:10px; animation:fadeSlide 0.35s ease forwards; opacity:0; }
+ 
+  @keyframes fadeSlide {
+    from { opacity:0; transform:translateY(8px); }
+    to   { opacity:1; transform:translateY(0); }
+  }
+ 
+  .msg.user { flex-direction: row-reverse; }
+ 
+  .avatar { width:30px; height:30px; border-radius:6px; flex-shrink:0; display:flex; align-items:center; justify-content:center; font-family:'Tektur',monospace; font-size:10px; font-weight:600; }
+  .avatar.bot  { background:var(--accent-dim); border:1px solid var(--accent); color:var(--accent); }
+  .avatar.user { background:#1a1f2e; border:1px solid var(--border); color:var(--text-dim); }
+ 
+  .bubble { max-width:85%; padding:12px 16px; border-radius:4px; font-size:14px; line-height:1.65; }
+  .msg.bot .bubble  { background:var(--bot-bg); border:1px solid rgba(0,229,160,0.15); border-left:3px solid var(--accent); color:var(--text); }
+  .msg.user .bubble { background:var(--user-bg); border:1px solid var(--border); color:var(--text); text-align:right; }
+ 
+  .bubble strong { color:var(--accent); font-weight:600; }
+  .bubble em     { color:var(--text-dim); font-style:italic; }
+ 
+  .typing { display:flex; gap:4px; align-items:center; padding:4px 0; }
+  .typing span { width:5px; height:5px; background:var(--accent); border-radius:50%; animation:bounce 1.2s ease-in-out infinite; }
+  .typing span:nth-child(2) { animation-delay:.2s; }
+  .typing span:nth-child(3) { animation-delay:.4s; }
+ 
+  @keyframes bounce {
+    0%,60%,100% { transform:translateY(0); opacity:.4; }
+    30%          { transform:translateY(-5px); opacity:1; }
+  }
+ 
+  /* ── INPUT ── */
+  .input-area { width:100%; max-width:720px; padding:10px 24px 24px; position:relative; z-index:1; }
+ 
+  .input-row { display:flex; gap:8px; align-items:flex-end; background:var(--surface); border:1px solid var(--border); border-radius:6px; padding:10px 12px; transition:border-color 0.2s; }
+  .input-row:focus-within { border-color:rgba(0,229,160,0.4); box-shadow:0 0 0 3px var(--accent-dim); }
+ 
+  textarea { flex:1; background:transparent; border:none; outline:none; color:var(--text); font-family:'Noto Serif',serif; font-size:14px; line-height:1.5; resize:none; min-height:22px; max-height:120px; overflow-y:auto; }
+  textarea::placeholder { color:var(--text-dim); }
+ 
+  .send-btn { width:34px; height:34px; background:var(--accent); border:none; border-radius:4px; cursor:pointer; display:flex; align-items:center; justify-content:center; flex-shrink:0; transition:all 0.2s; }
+  .send-btn:hover    { background:#00ffb3; box-shadow:0 0 12px var(--accent-glow); }
+  .send-btn:disabled { background:var(--border); cursor:not-allowed; }
+  .send-btn svg      { width:16px; height:16px; fill:var(--bg); }
+ 
+  .controls-row { display:flex; justify-content:center; align-items:center; gap:14px; margin-top:8px; }
+ 
+  .hint { font-family:'Tektur',monospace; font-size:10px; color:var(--text-dim); letter-spacing:.05em; }
+ 
+  .reset-btn { background:transparent; border:1px solid var(--border); color:var(--text-dim); font-family:'Tektur',monospace; font-size:10px; letter-spacing:.1em; padding:4px 10px; border-radius:3px; cursor:pointer; transition:all 0.2s; }
+  .reset-btn:hover { border-color:var(--signal); color:var(--signal); }
+</style>
+</head>
+<body>
+ 
+<!-- ══════════════════════════════════
+     API KEY SCREEN
+══════════════════════════════════ -->
+<div class="api-screen" id="apiScreen">
+  <div class="api-card">
+    <div class="api-logo"><div class="api-dot"></div>Глушь.io</div>
+    <div class="api-title">Введи API-ключ Anthropic</div>
+    <div class="api-desc">
+      Планировщик работает через Claude AI. Ключ хранится только в твоём браузере и никуда не отправляется.<br><br>
+      Получить ключ бесплатно: <a href="https://console.anthropic.com/settings/keys" target="_blank">console.anthropic.com</a>
+    </div>
+    <div class="api-label">API Key</div>
+    <div class="api-input-row">
+      <input class="api-input" id="apiKeyInput" type="password" placeholder="sk-ant-api03-..." onkeydown="apiKeydown(event)">
+      <button class="eye-btn" onclick="toggleEye()" title="Показать/скрыть">👁</button>
+    </div>
+    <div class="api-error" id="apiError">Неверный ключ или ошибка соединения. Проверь ключ.</div>
+    <button class="api-submit" id="apiSubmit" onclick="submitKey()">Войти в планировщик →</button>
+    <div class="api-note">
+      <span></span>Ключ сохраняется в localStorage браузера
+    </div>
+  </div>
+</div>
+ 
+<!-- ══════════════════════════════════
+     MAIN APP
+══════════════════════════════════ -->
+<div class="app" id="app">
+ 
+  <header>
+    <div>
+      <div class="logo"><div class="logo-dot"></div>Глушь.io — Планировщик дня</div>
+      <div class="subtitle">Бот-проводник · Cognitive Guide Architect</div>
+    </div>
+    <div class="header-right">
+      <button class="notebook-toggle" id="notebookToggle" onclick="toggleNotebook()">
+        <svg viewBox="0 0 24 24"><path d="M4 6h16v2H4zm0 5h16v2H4zm0 5h16v2H4z"/></svg>
+        <span id="toggleLabel">Блокнот</span>
+        <svg class="arrow" viewBox="0 0 24 24"><path d="M7 10l5 5 5-5z"/></svg>
+      </button>
+      <button class="key-btn" onclick="restoreSession()" title="Восстановить сессию" id="restoreBtn" style="display:none;">↩</button>
+      <button class="key-btn" onclick="changeKey()" title="Сменить ключ">🔑</button>
+    </div>
+  </header>
+ 
+  <div class="notebook-panel" id="notebookPanel">
+    <div class="notebook-inner">
+      <div class="notebook-header">
+        <div class="notebook-title">📋 Задачи дня</div>
+        <div class="notebook-actions">
+          <span class="task-count" id="taskCount">0 задач</span>
+          <button class="nb-btn" onclick="copyTasks()">Копировать</button>
+          <button class="nb-btn danger" onclick="clearDone()">Удалить выполненные</button>
+        </div>
+      </div>
+      <div class="task-input-row">
+        <input class="task-input" id="taskInput" placeholder="Добавить задачу..." onkeydown="taskKeydown(event)">
+        <button class="task-add-btn" onclick="addTask()">+</button>
+      </div>
+      <ul class="task-list" id="taskList"></ul>
+    </div>
+  </div>
+ 
+  <div class="stations">
+    <div class="station-track" id="stationTrack"></div>
+    <div class="station-labels" id="stationLabels"></div>
+  </div>
+ 
+  <div class="chat-wrap">
+    <div class="messages" id="messages"></div>
+  </div>
+ 
+  <div class="input-area">
+    <div class="input-row">
+      <textarea id="userInput" placeholder="Напиши свой ответ..." rows="1"></textarea>
+      <button class="send-btn" id="sendBtn" onclick="sendMessage()">
+        <svg viewBox="0 0 24 24"><path d="M2 21l21-9L2 3v7l15 2-15 2z"/></svg>
+      </button>
+    </div>
+    <div class="controls-row">
+      <div class="hint">Enter — отправить · Shift+Enter — новая строка</div>
+      <button class="reset-btn" onclick="resetChat()">↺ СБРОС</button>
+    </div>
+  </div>
+ 
+</div><!-- /app -->
+ 
+<script>
+/* ════════════════════════════════════
+   SYSTEM PROMPT
+════════════════════════════════════ */
+const SYSTEM_PROMPT = `
+<role_and_tone>
+Ты — Проводник дня. Твой пользователь строит IT-продукты, ведёт несколько параллельных проектов. Твоя цель: провести его от хаоса в голове к чёткому плану дня. Тон: партнёрский, сухой, без лирики. Как надёжный соратник, а не мотивационный спикер.
+</role_and_tone>
+ 
+<journey_map>
+Станция 1 — СОСТОЯНИЕ
+  Спроси: как себя чувствует + энергия 1-10.
+  Если энергия ≤4 — план будет минимальным, предупреди об этом.
+ 
+Станция 2 — ЗАДАЧИ
+  Попроси написать ВСЕ задачи подряд без фильтрации.
+  "Просто список, всё что крутится в голове."
+ 
+Станция 3 — ПРИОРИТЕТ
+  Выбери 1-3 задачи: "Что если сделать только это — день не зря?"
+  Остальное — в резерв.
+ 
+Станция 4 — БЛОКИ
+  Выяви что мешает (страх, затык, неясность, усталость).
+  Для каждого блока — один микро-шаг чтобы его снять.
+ 
+Станция 5 — ПЛАН
+  Итоговый формат строго:
+  ✅ СЕГОДНЯ (топ-3):
+  1. [задача] — примерно [время]
+  2. [задача] — примерно [время]
+  3. [задача] — примерно [время]
+  ⚡ ПЕРВЫЙ ШАГ: [действие на следующие 5 минут]
+  📦 РЕЗЕРВ: [остальные задачи]
+  Завершить: "Готово. Первый шаг — прямо сейчас."
+</journey_map>
+ 
+<interaction_rules>
+1. ОДНА СТАНЦИЯ ЗА РАЗ.
+2. КРАТКОСТЬ: максимум 3-4 предложения + вопрос.
+3. ВОПРОС В КОНЦЕ каждого сообщения.
+4. РЕАЛИЗМ: если 10 задач на день — "Это на неделю. Выбери три."
+5. Добавляй [СТАНЦИЯ:N] в конце каждого ответа — технический маркер.
+</interaction_rules>
+ 
+<fallback_protocol>
+"не знаю" / "каша в голове" → "Окей. Одна вещь — что сейчас давит сильнее всего?"
+Уход от темы → "Понял. Мы на Станции X. [повтори вопрос]"
+</fallback_protocol>
+ 
+Язык: только русский. Будь лаконичен.`;
+ 
+/* ════════════════════════════════════
+   API KEY
+════════════════════════════════════ */
+let API_KEY = localStorage.getItem('glush_api_key') || '';
+ 
+function apiKeydown(e) { if (e.key === 'Enter') submitKey(); }
+ 
+function toggleEye() {
+  const inp = document.getElementById('apiKeyInput');
+  inp.type = inp.type === 'password' ? 'text' : 'password';
+}
+ 
+async function submitKey() {
+  const inp = document.getElementById('apiKeyInput');
+  const err = document.getElementById('apiError');
+  const btn = document.getElementById('apiSubmit');
+  const key = inp.value.trim();
+  if (!key.startsWith('sk-ant')) { err.style.display = 'block'; err.textContent = 'Ключ должен начинаться с sk-ant...'; return; }
+ 
+  btn.textContent = 'Проверяем...';
+  btn.disabled = true;
+  err.style.display = 'none';
+ 
+  // Quick test call
+  try {
+    const res = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'x-api-key': key, 'anthropic-version': '2023-06-01' },
+      body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:10, messages:[{role:'user',content:'hi'}] })
+    });
+    if (!res.ok) throw new Error('bad key');
+    API_KEY = key;
+    localStorage.setItem('glush_api_key', key);
+    launchApp();
+  } catch {
+    err.style.display = 'block';
+    err.textContent = 'Ошибка. Проверь ключ или соединение.';
+    btn.textContent = 'Войти в планировщик →';
+    btn.disabled = false;
+  }
+}
+ 
+function changeKey() {
+  localStorage.removeItem('glush_api_key');
+  API_KEY = '';
+  document.getElementById('app').classList.remove('visible');
+  document.getElementById('apiScreen').style.display = 'flex';
+  document.getElementById('apiKeyInput').value = '';
+  document.getElementById('apiSubmit').textContent = 'Войти в планировщик →';
+  document.getElementById('apiSubmit').disabled = false;
+}
+ 
+function launchApp() {
+  document.getElementById('apiScreen').style.display = 'none';
+  document.getElementById('app').classList.add('visible');
+  buildStations();
+ 
+  // Пробуем загрузить сохранённую сессию
+  const saved = loadSession();
+  if (saved && saved.history && saved.history.length > 0) {
+    history = saved.history;
+    currentStation = saved.currentStation || 0;
+    tasks = saved.tasks || [];
+    taskIdCounter = saved.taskIdCounter || 0;
+    renderTasks();
+    if (currentStation) updateStations(currentStation);
+    history.forEach(m => addMessageRaw(m.role === 'user' ? 'user' : 'bot', m.content));
+    // Показываем кнопку восстановления (бэкап предыдущей)
+    if (localStorage.getItem(BACKUP_KEY)) document.getElementById('restoreBtn').style.display = 'flex';
+    showToast(`Сессия загружена (${saved.savedAt || ''})`);
+  } else {
+    renderTasks();
+    startSession();
+  }
+}
+ 
+/* ════════════════════════════════════
+   NOTEBOOK
+════════════════════════════════════ */
+let tasks = [], taskIdCounter = 0;
+ 
+function toggleNotebook() {
+  const panel = document.getElementById('notebookPanel');
+  const btn   = document.getElementById('notebookToggle');
+  const label = document.getElementById('toggleLabel');
+  const isOpen = panel.classList.toggle('open');
+  btn.classList.toggle('open', isOpen);
+  label.textContent = isOpen ? 'Скрыть' : 'Блокнот';
+}
+ 
+function taskKeydown(e) { if (e.key === 'Enter') { e.preventDefault(); addTask(); } }
+ 
+function addTask() {
+  const input = document.getElementById('taskInput');
+  const text = input.value.trim();
+  if (!text) return;
+  tasks.push({ id: ++taskIdCounter, text, done: false });
+  input.value = '';
+  renderTasks();
+}
+ 
+function toggleTask(id) { const t = tasks.find(t=>t.id===id); if(t){t.done=!t.done; renderTasks();} }
+function deleteTask(id) { tasks = tasks.filter(t=>t.id!==id); renderTasks(); }
+function clearDone()    { tasks = tasks.filter(t=>!t.done); renderTasks(); }
+function copyTasks()    { navigator.clipboard.writeText(tasks.map(t=>(t.done?'[✓] ':'[ ] ')+t.text).join('\n')||'Список пуст').catch(()=>{}); }
+ 
+function renderTasks() {
+  const list = document.getElementById('taskList');
+  const count = document.getElementById('taskCount');
+  list.innerHTML = '';
+  count.textContent = `${tasks.length} задач`;
+  tasks.forEach(t => {
+    const li  = document.createElement('li'); li.className = 'task-item';
+    const chk = document.createElement('div'); chk.className = 'task-check'+(t.done?' checked':''); chk.onclick = ()=>toggleTask(t.id);
+    const txt = document.createElement('span'); txt.className = 'task-text'+(t.done?' done':''); txt.textContent = t.text;
+    const del = document.createElement('button'); del.className = 'task-del'; del.textContent = '×'; del.onclick = ()=>deleteTask(t.id);
+    li.appendChild(chk); li.appendChild(txt); li.appendChild(del); list.appendChild(li);
+  });
+}
+ 
+/* ════════════════════════════════════
+   STATIONS
+════════════════════════════════════ */
+const STATIONS = [
+  {id:1,label:'Состояние'},{id:2,label:'Задачи'},
+  {id:3,label:'Приоритет'},{id:4,label:'Блоки'},{id:5,label:'План'}
+];
+ 
+let history = [], currentStation = 0;
+ 
+/* ════════════════════════════════════
+   AUTOSAVE / RESTORE
+════════════════════════════════════ */
+const SAVE_KEY = 'glush_session';
+const BACKUP_KEY = 'glush_session_backup';
+ 
+function saveSession() {
+  const data = { history, currentStation, tasks, taskIdCounter, savedAt: new Date().toLocaleTimeString('ru') };
+  localStorage.setItem(SAVE_KEY, JSON.stringify(data));
+}
+ 
+function loadSession() {
+  try {
+    const raw = localStorage.getItem(SAVE_KEY);
+    if (!raw) return null;
+    return JSON.parse(raw);
+  } catch { return null; }
+}
+ 
+function backupSession() {
+  const current = localStorage.getItem(SAVE_KEY);
+  if (current) localStorage.setItem(BACKUP_KEY, current);
+}
+ 
+function restoreBackup() {
+  try {
+    const raw = localStorage.getItem(BACKUP_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    localStorage.setItem(SAVE_KEY, raw);
+    return data;
+  } catch { return false; }
+}
+ 
+function buildStations() {
+  const track = document.getElementById('stationTrack');
+  const labels = document.getElementById('stationLabels');
+  track.innerHTML = ''; labels.innerHTML = '';
+  STATIONS.forEach((s,i) => {
+    const node = document.createElement('div'); node.className='station-node'; node.id=`node-${s.id}`; node.textContent=s.id; track.appendChild(node);
+    const lbl  = document.createElement('div'); lbl.className='station-label'; lbl.id=`lbl-${s.id}`; lbl.textContent=s.label; labels.appendChild(lbl);
+    if (i < STATIONS.length-1) { const line=document.createElement('div'); line.className='station-line'; line.id=`line-${s.id}`; track.appendChild(line); }
+  });
+}
+ 
+function updateStations(station) {
+  currentStation = station;
+  STATIONS.forEach(s => {
+    const node = document.getElementById(`node-${s.id}`);
+    const lbl  = document.getElementById(`lbl-${s.id}`);
+    const line = document.getElementById(`line-${s.id}`);
+    node.className='station-node'; lbl.className='station-label'; if(line) line.className='station-line';
+    if (s.id < station) { node.classList.add('done'); node.textContent='✓'; lbl.classList.add('done-lbl'); if(line) line.classList.add('done'); }
+    else if (s.id === station) { node.classList.add('active'); node.textContent=s.id; lbl.classList.add('active'); }
+    else { node.textContent=s.id; }
+  });
+}
+ 
+/* ════════════════════════════════════
+   CHAT
+════════════════════════════════════ */
+function addMessage(role, text) {
+  const msgs = document.getElementById('messages');
+  const wrap = document.createElement('div'); wrap.className=`msg ${role}`;
+  const avatar = document.createElement('div'); avatar.className=`avatar ${role}`; avatar.textContent=role==='bot'?'AI':'Я';
+  const bubble = document.createElement('div'); bubble.className='bubble';
+  const clean = text.replace(/\[СТАНЦИЯ:\d\]/g,'').trim();
+  bubble.innerHTML = clean.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');
+  wrap.appendChild(avatar); wrap.appendChild(bubble); msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+  saveSession(); // автосохранение после каждого сообщения
+}
+ 
+function showTyping() {
+  const msgs = document.getElementById('messages');
+  const wrap = document.createElement('div'); wrap.className='msg bot'; wrap.id='typing-indicator';
+  const avatar = document.createElement('div'); avatar.className='avatar bot'; avatar.textContent='AI';
+  const bubble = document.createElement('div'); bubble.className='bubble'; bubble.innerHTML='<div class="typing"><span></span><span></span><span></span></div>';
+  wrap.appendChild(avatar); wrap.appendChild(bubble); msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+ 
+function removeTyping() { const t=document.getElementById('typing-indicator'); if(t) t.remove(); }
+function extractStation(text) { const m=text.match(/\[СТАНЦИЯ:(\d)\]/); return m?parseInt(m[1]):null; }
+ 
+/* ════════════════════════════════════
+   API CALL
+════════════════════════════════════ */
+async function callAPI(messages) {
+  const res = await fetch('https://api.anthropic.com/v1/messages', {
+    method: 'POST',
+    headers: { 'Content-Type':'application/json', 'x-api-key': API_KEY, 'anthropic-version':'2023-06-01' },
+    body: JSON.stringify({ model:'claude-sonnet-4-20250514', max_tokens:1000, system:SYSTEM_PROMPT, messages })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message);
+  return data.content?.[0]?.text || 'Ошибка ответа.';
+}
+ 
+async function sendMessage() {
+  const input = document.getElementById('userInput');
+  const btn   = document.getElementById('sendBtn');
+  const text  = input.value.trim();
+  if (!text) return;
+  addMessage('user', text);
+  history.push({ role:'user', content:text });
+  input.value = ''; input.style.height='auto';
+  btn.disabled = true; showTyping();
+  try {
+    const reply = await callAPI(history);
+    removeTyping(); addMessage('bot', reply);
+    history.push({ role:'assistant', content:reply });
+    const s = extractStation(reply); if(s) updateStations(s);
+  } catch { removeTyping(); addMessage('bot','Ошибка соединения. Попробуй ещё раз.'); }
+  btn.disabled = false; input.focus();
+}
+ 
+async function resetChat() {
+  // Двойная защита: кастомный диалог вместо confirm
+  const ok = await showResetDialog();
+  if (!ok) return;
+  backupSession(); // сохраняем бэкап перед сбросом
+  history = []; currentStation = 0;
+  document.getElementById('messages').innerHTML='';
+  document.getElementById('restoreBtn').style.display = 'flex'; // показать кнопку восстановления
+  buildStations(); await startSession();
+}
+ 
+function showResetDialog() {
+  return new Promise(resolve => {
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:999;display:flex;align-items:center;justify-content:center;padding:24px;`;
+    overlay.innerHTML = `
+      <div style="background:#111318;border:1px solid #1e2229;border-top:3px solid #ff4d6d;border-radius:8px;padding:28px;max-width:360px;width:100%;font-family:'Tektur',monospace;">
+        <div style="font-size:13px;color:#ff4d6d;letter-spacing:.1em;margin-bottom:12px;">⚠ СБРОС СЕССИИ</div>
+        <div style="font-size:13px;color:#d4dbe8;line-height:1.6;margin-bottom:8px;font-family:'Noto Serif',serif;">Весь диалог будет удалён. Бэкап сохранится — можно будет восстановить кнопкой ↩ в шапке.</div>
+        <div style="font-size:11px;color:#5a6478;margin-bottom:20px;font-family:'Noto Serif',serif;">Задачи в блокноте останутся.</div>
+        <div style="display:flex;gap:10px;">
+          <button id="cancelReset" style="flex:1;background:transparent;border:1px solid #1e2229;border-radius:5px;padding:10px;color:#5a6478;font-family:'Tektur',monospace;font-size:11px;cursor:pointer;letter-spacing:.08em;">ОТМЕНА</button>
+          <button id="confirmReset" style="flex:1;background:#ff4d6d;border:none;border-radius:5px;padding:10px;color:#0a0c0f;font-family:'Tektur',monospace;font-size:11px;font-weight:700;cursor:pointer;letter-spacing:.08em;">ДА, СБРОСИТЬ</button>
+        </div>
+      </div>`;
+    document.body.appendChild(overlay);
+    document.getElementById('cancelReset').onclick  = () => { overlay.remove(); resolve(false); };
+    document.getElementById('confirmReset').onclick = () => { overlay.remove(); resolve(true); };
+  });
+}
+ 
+async function restoreSession() {
+  const data = restoreBackup();
+  if (!data) { showToast('Нет сохранённой сессии'); return; }
+  history = data.history || [];
+  currentStation = data.currentStation || 0;
+  tasks = data.tasks || [];
+  taskIdCounter = data.taskIdCounter || 0;
+  document.getElementById('messages').innerHTML = '';
+  buildStations();
+  renderTasks();
+  if (currentStation) updateStations(currentStation);
+  // Перерисовываем сообщения из истории
+  history.forEach(m => addMessageRaw(m.role === 'user' ? 'user' : 'bot', m.content));
+  showToast(`Сессия восстановлена (${data.savedAt || ''})`);
+}
+ 
+function addMessageRaw(role, text) {
+  const msgs = document.getElementById('messages');
+  const wrap = document.createElement('div'); wrap.className=`msg ${role}`;
+  const avatar = document.createElement('div'); avatar.className=`avatar ${role}`; avatar.textContent=role==='bot'?'AI':'Я';
+  const bubble = document.createElement('div'); bubble.className='bubble';
+  const clean = text.replace(/\[СТАНЦИЯ:\d\]/g,'').trim();
+  bubble.innerHTML = clean.replace(/\*\*(.*?)\*\*/g,'<strong>$1</strong>').replace(/\*(.*?)\*/g,'<em>$1</em>').replace(/\n/g,'<br>');
+  wrap.appendChild(avatar); wrap.appendChild(bubble); msgs.appendChild(wrap);
+  msgs.scrollTop = msgs.scrollHeight;
+}
+ 
+function showToast(msg) {
+  const t = document.createElement('div');
+  t.style.cssText = `position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:#00e5a0;color:#0a0c0f;font-family:'Tektur',monospace;font-size:11px;letter-spacing:.1em;padding:10px 20px;border-radius:6px;z-index:999;transition:opacity 0.5s;`;
+  t.textContent = msg;
+  document.body.appendChild(t);
+  setTimeout(() => { t.style.opacity='0'; setTimeout(()=>t.remove(), 500); }, 2500);
+}
+ 
+async function startSession() {
+  const btn = document.getElementById('sendBtn'); btn.disabled=true; showTyping();
+  try {
+    const reply = await callAPI([{role:'user',content:'Начни сессию планирования дня.'}]);
+    removeTyping(); addMessage('bot', reply);
+    history.push({role:'assistant',content:reply});
+    const s = extractStation(reply); if(s) updateStations(s);
+  } catch { removeTyping(); addMessage('bot','Не удалось подключиться. Обнови страницу.'); }
+  btn.disabled = false;
+}
+ 
+document.getElementById('userInput').addEventListener('input', function() {
+  this.style.height='auto'; this.style.height=Math.min(this.scrollHeight,120)+'px';
+});
+document.getElementById('userInput').addEventListener('keydown', function(e) {
+  if (e.key==='Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+});
+ 
+/* ════════════════════════════════════
+   INIT
+════════════════════════════════════ */
+if (API_KEY) {
+  launchApp();
+} else {
+  // show key screen
+}
+</script>
+</body>
+</html>
